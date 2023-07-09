@@ -8,20 +8,27 @@ import projects.entity.Project;
 import projects.exception.DbException;
 import projects.service.ProjectService;
 
+//menu scanner to take user inputs
+
 public class ProjectsApp {
 	private Scanner scanner = new Scanner(System.in);
 	private ProjectService projectService = new ProjectService();
 	private Project curProject;
 
+	
+	// list of options for users to chose from
 	// @formatter:off
 	private List<String> operations = List.of(
 		
 		"1) Add a project",	
 		"2) list projects",
-		"3) Select a project"
+		"3) Select a project",
+		"4) Update project details",
+		"5) Delete a project"
 	);
 	// @formatter:on
 
+	//method to process the users selection
 	public static void main(String[] args) {
 		new ProjectsApp().processUserSelections();
 
@@ -53,6 +60,14 @@ public class ProjectsApp {
 					selectProject();
 					break;
 					
+				case 4:
+					updateProjectDetails();
+					break;
+					
+				case 5:
+					deleteProject();
+					break;
+					
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again.");
 					break;
@@ -67,6 +82,58 @@ public class ProjectsApp {
 
 	}
 
+	// selection 5 delete a project and the outputs the user would see
+	private void deleteProject() {
+		Integer projectId = getIntInput("Enter the ID of the project to delete");
+		
+		projectService.deleteProject(projectId);
+		System.out.println("Project " + projectId + " was deleted successfully.");
+		
+		if(Objects.nonNull(curProject) && curProject.getProjectId().equals(projectId)) {
+			curProject = null;
+		}
+		
+	}
+	
+   //selection 4 update project and the outputs the user would see
+	private void updateProjectDetails() {
+		if(Objects.isNull(curProject)) {
+			System.out.println("\nPlease select a project.");
+			return;
+		}
+		String projectName =
+		 getStringInput("Enter the project name[" + curProject.getProjectName() + "]");
+		
+		BigDecimal estimatedHours =
+		 getDecimalInput("Enter the estimated hours[" + curProject.getEstimatedHours() + "]");
+		
+		BigDecimal actualHours =
+		 getDecimalInput("Enter the actual hours +[" + curProject.getActualHours() + "]");
+		
+		Integer difficulty =
+		 getIntInput("Enter the project difficulty (1-5) [" + curProject.getDifficulty() + "]");
+		
+		String notes = getStringInput("Enter the project notes [" + curProject.getNotes() + "]");
+		
+		Project project = new Project();
+		
+		project.setProjectId(curProject.getProjectId());
+		project.setProjectName(Objects.isNull(projectName) ? curProject.getProjectName() : projectName);
+		
+		project.setEstimatedHours(
+		 Objects.isNull(projectName) ? curProject.getEstimatedHours() : estimatedHours);
+		
+		project.setActualHours(Objects.isNull(actualHours) ? curProject.getActualHours() : actualHours);
+		project.setDifficulty(Objects.isNull(difficulty) ? curProject.getDifficulty() : difficulty);
+		project.setNotes(Objects.isNull(notes) ? curProject.getNotes() : notes);
+		
+		projectService.modifyProjectDetails(project);
+		
+		curProject = projectService.fetchProjectById(curProject.getProjectId());
+				
+		 		
+	}
+  // selection 3 select a project and the outputs the user would see
 	private void selectProject() {
 		listProjects();
 		Integer projectId = getIntInput("Enter a project ID to select a project");
@@ -76,7 +143,8 @@ public class ProjectsApp {
 		curProject =projectService.fetchProjectById(projectId);
 		
 	}
-
+ 
+	//selection 2 list all projects to user
 	private void listProjects() {
      List<Project> projects = projectService.fetchAllProjects();
      
@@ -87,7 +155,8 @@ public class ProjectsApp {
     		 + ": " + project.getProjectName()));
 
 	}
-
+ 
+	// selection 1 create  a new project and the outputs the user would see
 	private void createProject() {
 		String projectName = getStringInput("Enter the project name");
 		BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours");
@@ -123,11 +192,13 @@ public class ProjectsApp {
 	}
 	
 
+	//exit the program and the exit message
 	private boolean exitMenu() {
 		System.out.println("Exiting the menu.");
 		return true;
 	}
 
+	//the method to decifer the input from the user
 	private int getUserSelection() {
 		printOperations();
 		

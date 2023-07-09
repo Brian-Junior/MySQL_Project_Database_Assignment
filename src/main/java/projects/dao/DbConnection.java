@@ -12,6 +12,8 @@ public class DbConnection {
 	private static String SCHEMA = "projects";
 	private static String USER = "projects";
 	
+// method to call the connection for the JDBC	
+	
 	public static Connection getConnection() {
 	String uri = String.format("jdbc:mysql://%s:%d/%s?user=%s&password=%s&usessl=false",HOST,PORT,SCHEMA,USER,PASSWORD);
 	
